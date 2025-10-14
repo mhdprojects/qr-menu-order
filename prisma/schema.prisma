@@ -1,0 +1,316 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+    // directUrl = env("DIRECT_URL")
+}
+
+// Tenant Management
+model Tenant {
+    id        String   @id @default(cuid())
+    slug      String   @unique
+    name      String
+    email     String
+    isActive  Boolean  @default(true) @map("is_active")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relations
+    users              TenantUser[]
+    categories         Category[]
+    menuItems          MenuItem[]
+    menuVariants       MenuVariant[]
+    menuModifiers      MenuModifier[]
+    modifierOptions    MenuModifierOption[]
+    tables             Table[]
+    tableSessions      TableSession[]
+    customers          Customer[]
+    orders             Order[]
+    orderItems         OrderItem[]
+    orderItemVariants  OrderItemVariant[]
+    orderItemModifiers OrderItemModifier[]
+
+    @@map("tenants")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String   @unique
+    password  String
+    name      String?
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relations
+    tenantUsers TenantUser[]
+
+    @@map("users")
+}
+
+model TenantUser {
+    id        String   @id @default(cuid())
+    tenantId  String   @map("tenant_id")
+    userId    String   @map("user_id")
+    role      String   @default("admin")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    // Relations
+    tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([tenantId, userId])
+    @@map("tenant_users")
+}
+
+// Menu Management
+model Category {
+    id        String    @id @default(cuid())
+    tenantId  String    @map("tenant_id")
+    name      String
+    isActive  Boolean   @default(true) @map("is_active")
+    sortOrder Int       @default(0) @map("sort_order")
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    // Relations
+    tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    menuItems MenuItem[]
+
+    @@map("categories")
+}
+
+model MenuItem {
+    id           String    @id @default(cuid())
+    tenantId     String    @map("tenant_id")
+    categoryId   String    @map("category_id")
+    name         String
+    description  String?
+    basePrice    Decimal   @map("base_price") @db.Decimal(12, 2)
+    photoUrl     String?   @map("photo_url")
+    availability String    @default("available") // available, unavailable
+    createdAt    DateTime  @default(now()) @map("created_at")
+    updatedAt    DateTime  @updatedAt @map("updated_at")
+    deletedAt    DateTime? @map("deleted_at")
+
+    // Relations
+    tenant     Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    category   Category       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+    variants   MenuVariant[]
+    modifiers  MenuModifier[]
+    orderItems OrderItem[]
+
+    @@map("menu_items")
+}
+
+model MenuVariant {
+    id         String    @id @default(cuid())
+    tenantId   String    @map("tenant_id")
+    menuItemId String    @map("menu_item_id")
+    name       String
+    priceDelta Decimal   @default(0) @map("price_delta") @db.Decimal(12, 2)
+    sortOrder  Int       @default(0) @map("sort_order")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+    deletedAt  DateTime? @map("deleted_at")
+
+    // Relations
+    tenant    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    menuItem  MenuItem           @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+    orderItem OrderItemVariant[]
+
+    @@map("menu_variants")
+}
+
+model MenuModifier {
+    id         String    @id @default(cuid())
+    tenantId   String    @map("tenant_id")
+    menuItemId String    @map("menu_item_id")
+    name       String
+    isRequired Boolean   @default(false) @map("is_required")
+    maxSelect  Int?      @map("max_select")
+    sortOrder  Int       @default(0) @map("sort_order")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+    deletedAt  DateTime? @map("deleted_at")
+
+    // Relations
+    tenant    Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    menuItem  MenuItem             @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+    options   MenuModifierOption[]
+    orderItem OrderItemModifier[]
+
+    @@map("menu_modifiers")
+}
+
+model MenuModifierOption {
+    id         String    @id @default(cuid())
+    tenantId   String    @map("tenant_id")
+    modifierId String    @map("modifier_id")
+    name       String
+    priceDelta Decimal   @default(0) @map("price_delta") @db.Decimal(12, 2)
+    sortOrder  Int       @default(0) @map("sort_order")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+    deletedAt  DateTime? @map("deleted_at")
+
+    // Relations
+    tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    modifier  MenuModifier        @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+    orderItem OrderItemModifier[]
+
+    @@map("menu_modifier_options")
+}
+
+// Table Management
+model Table {
+    id          String    @id @default(cuid())
+    tenantId    String    @map("tenant_id")
+    code        String
+    name        String
+    capacity    Int
+    qrcodeToken String    @unique @map("qrcode_token")
+    createdAt   DateTime  @default(now()) @map("created_at")
+    updatedAt   DateTime  @updatedAt @map("updated_at")
+    deletedAt   DateTime? @map("deleted_at")
+
+    // Relations
+    tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    sessions TableSession[]
+
+    @@unique([tenantId, code])
+    @@map("tables")
+}
+
+model TableSession {
+    id         String    @id @default(cuid())
+    tenantId   String    @map("tenant_id")
+    tableId    String    @map("table_id")
+    customerId String?   @map("customer_id")
+    startedAt  DateTime  @default(now()) @map("started_at")
+    endedAt    DateTime? @map("ended_at")
+    isActive   Boolean   @default(true) @map("is_active")
+    createdAt  DateTime  @default(now()) @map("created_at")
+    updatedAt  DateTime  @updatedAt @map("updated_at")
+
+    // Relations
+    tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    table    Table     @relation(fields: [tableId], references: [id], onDelete: Cascade)
+    customer Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+    orders   Order[]
+
+    @@index([tenantId, tableId, isActive])
+    @@map("table_sessions")
+}
+
+// Customer Management
+model Customer {
+    id        String    @id @default(cuid())
+    tenantId  String    @map("tenant_id")
+    name      String?
+    phone     String?
+    email     String?
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deletedAt DateTime? @map("deleted_at")
+
+    // Relations
+    tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    sessions TableSession[]
+
+    @@map("customers")
+}
+
+// Order Management
+model Order {
+    id                  String    @id @default(cuid())
+    tenantId            String    @map("tenant_id")
+    orderType           String    @map("order_type") // dine_in, take_away
+    tableSessionId      String?   @map("table_session_id")
+    orderNumber         String    @unique @map("order_number")
+    status              String    @default("placed") // placed, preparing, ready, served, canceled
+    note                String?
+    subtotalAmount      Decimal   @map("subtotal_amount") @db.Decimal(12, 2)
+    discountAmount      Decimal   @default(0) @map("discount_amount") @db.Decimal(12, 2)
+    serviceChargeAmount Decimal   @default(0) @map("service_charge_amount") @db.Decimal(12, 2)
+    taxAmount           Decimal   @default(0) @map("tax_amount") @db.Decimal(12, 2)
+    totalAmount         Decimal   @map("total_amount") @db.Decimal(12, 2)
+    createdAt           DateTime  @default(now()) @map("created_at")
+    updatedAt           DateTime  @updatedAt @map("updated_at")
+    deletedAt           DateTime? @map("deleted_at")
+
+    // Relations
+    tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    tableSession TableSession? @relation(fields: [tableSessionId], references: [id], onDelete: SetNull)
+    items        OrderItem[]
+
+    @@unique([tenantId, orderNumber])
+    @@map("orders")
+}
+
+model OrderItem {
+    id                String    @id @default(cuid())
+    tenantId          String    @map("tenant_id")
+    orderId           String    @map("order_id")
+    menuItemId        String    @map("menu_item_id")
+    nameSnapshot      String    @map("name_snapshot")
+    basePriceSnapshot Decimal   @map("base_price_snapshot") @db.Decimal(12, 2)
+    qty               Int
+    note              String?
+    status            String    @default("preparing")
+    createdAt         DateTime  @default(now()) @map("created_at")
+    updatedAt         DateTime  @updatedAt @map("updated_at")
+    deletedAt         DateTime? @map("deleted_at")
+
+    // Relations
+    tenant    Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    order     Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    menuItem  MenuItem            @relation(fields: [menuItemId], references: [id], onDelete: Cascade)
+    variants  OrderItemVariant[]
+    modifiers OrderItemModifier[]
+
+    @@map("order_items")
+}
+
+model OrderItemVariant {
+    id                 String   @id @default(cuid())
+    tenantId           String   @map("tenant_id")
+    orderItemId        String   @map("order_item_id")
+    variantId          String   @map("variant_id")
+    nameSnapshot       String   @map("name_snapshot")
+    priceDeltaSnapshot Decimal  @map("price_delta_snapshot") @db.Decimal(12, 2)
+    createdAt          DateTime @default(now()) @map("created_at")
+
+    // Relations
+    tenant    Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    orderItem OrderItem   @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+    variant   MenuVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+    @@map("order_item_variants")
+}
+
+model OrderItemModifier {
+    id                 String   @id @default(cuid())
+    tenantId           String   @map("tenant_id")
+    orderItemId        String   @map("order_item_id")
+    modifierId         String   @map("modifier_id")
+    optionId           String   @map("option_id")
+    nameSnapshot       String   @map("name_snapshot")
+    priceDeltaSnapshot Decimal  @map("price_delta_snapshot") @db.Decimal(12, 2)
+    createdAt          DateTime @default(now()) @map("created_at")
+
+    // Relations
+    tenant    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+    orderItem OrderItem          @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+    modifier  MenuModifier       @relation(fields: [modifierId], references: [id], onDelete: Cascade)
+    option    MenuModifierOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+    @@map("order_item_modifiers")
+}
