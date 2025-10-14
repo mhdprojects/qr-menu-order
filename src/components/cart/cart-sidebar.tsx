@@ -55,7 +55,7 @@ export function CartSidebar({ children, onCheckout, isOpen: externalIsOpen, onOp
             <SheetTrigger asChild>
                 {children}
             </SheetTrigger>
-            <SheetContent className="w-full sm:max-w-lg">
+            <SheetContent className="w-full sm:max-w-lg px-4">
                 <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
                         <ShoppingCart className="h-5 w-5" />

@@ -11,10 +11,19 @@ import {
     Table,
     Users,
     Settings,
-    LogOut
+    LogOut,
+    ChevronUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
+import { useState } from 'react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface AdminSidebarProps {
     tenantSlug: string;
@@ -76,24 +85,38 @@ export function AdminSidebar({ tenantSlug, tenantName }: AdminSidebarProps) {
 
                 {/* User Menu */}
                 <div className="mt-auto p-4 border-t">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center">
-                            <span className="text-teal-600 font-semibold text-sm">A</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate">Admin User</p>
-                            <p className="text-xs text-muted-foreground truncate">admin@{tenantSlug}.com</p>
-                        </div>
-                    </div>
-
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start"
-                        onClick={handleLogout}
-                    >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Logout
-                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                className="w-full justify-start p-2 h-auto"
+                            >
+                                <div className="flex items-center gap-3 w-full">
+                                    <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center">
+                                        <span className="text-teal-600 font-semibold text-sm">A</span>
+                                    </div>
+                                    <div className="flex-1 min-w-0 text-left">
+                                        <p className="text-sm font-medium truncate">Admin User</p>
+                                        <p className="text-xs text-muted-foreground truncate">admin@{tenantSlug}.com</p>
+                                    </div>
+                                    <ChevronUp className="h-4 w-4 rotate-180" />
+                                </div>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-56">
+                            <DropdownMenuItem>
+                                <div className="flex flex-col">
+                                    <span className="font-medium">Profile</span>
+                                    <span className="text-xs text-muted-foreground">Kelola akun Anda</span>
+                                </div>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={handleLogout}>
+                                <LogOut className="h-4 w-4 mr-2" />
+                                Logout
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
         </div>

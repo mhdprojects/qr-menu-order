@@ -6,6 +6,7 @@ import { CheckoutForm } from '@/components/checkout/checkout-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Clock } from 'lucide-react';
+import { formatCurrency } from '@/lib/format';
 
 export default function CheckoutPage() {
     const params = useParams();
@@ -54,7 +55,7 @@ export default function CheckoutPage() {
                                 <div className="space-y-3 text-sm text-muted-foreground mb-6">
                                     <div>Status: <span className="font-medium text-foreground">Menunggu Konfirmasi</span></div>
                                     <div>Total: <span className="font-medium text-foreground">
-                                        Rp {orderPlaced.totalAmount.toLocaleString('id-ID')}
+                                        {formatCurrency(orderPlaced.totalAmount)}
                                     </span></div>
                                     {orderPlaced.customer && (
                                         <div>Pelanggan: <span className="font-medium text-foreground">

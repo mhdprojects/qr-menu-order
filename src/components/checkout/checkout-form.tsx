@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { useCart } from '@/hooks/use-cart';
 import { useToast } from '@/hooks/use-toast';
+import { formatCurrency } from '@/lib/format';
 
 interface CheckoutFormProps {
     tableToken?: string;
@@ -113,9 +114,6 @@ export function CheckoutForm({ tableToken, onOrderPlaced, onBack }: CheckoutForm
         }
     };
 
-    const formatPrice = (price: number) => {
-        return `Rp ${price.toLocaleString('id-ID')}`;
-    };
 
     if (items.length === 0) {
         return (
@@ -142,9 +140,9 @@ export function CheckoutForm({ tableToken, onOrderPlaced, onBack }: CheckoutForm
                 <CardContent>
                     <div className="space-y-3">
                         {items.map((item) => {
-                            const basePrice = item.menuItem.basePrice;
-                            const variantPrice = item.variant?.priceDelta || 0;
-                            const modifierPrice = item.modifiers.reduce((sum, mod) => sum + mod.priceDelta, 0);
+                            const basePrice = Number(item.menuItem.basePrice);
+                            const variantPrice = Number(item.variant?.priceDelta || 0);
+                            const modifierPrice = item.modifiers.reduce((sum, mod) => sum + Number(mod.priceDelta), 0);
                             const itemTotal = (basePrice + variantPrice + modifierPrice) * item.quantity;
 
                             return (
@@ -171,11 +169,11 @@ export function CheckoutForm({ tableToken, onOrderPlaced, onBack }: CheckoutForm
                                     </div>
                                     <div className="text-right">
                                         <div className="font-medium">
-                                            {formatPrice(itemTotal)}
+                                            {formatCurrency(itemTotal)}
                                         </div>
                                         {item.quantity > 1 && (
                                             <div className="text-sm text-muted-foreground">
-                                                {formatPrice(basePrice + variantPrice + modifierPrice)} × {item.quantity}
+                                                {formatCurrency(basePrice + variantPrice + modifierPrice)} × {item.quantity}
                                             </div>
                                         )}
                                     </div>
@@ -190,22 +188,22 @@ export function CheckoutForm({ tableToken, onOrderPlaced, onBack }: CheckoutForm
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span>Subtotal</span>
-                            <span>{formatPrice(getSubtotal())}</span>
+                            <span>{formatCurrency(getSubtotal())}</span>
                         </div>
                         <div className="flex justify-between">
                             <span>Pajak (10%)</span>
-                            <span>{formatPrice(getTaxAmount())}</span>
+                            <span>{formatCurrency(getTaxAmount())}</span>
                         </div>
                         {formData.orderType === 'dine_in' && (
                             <div className="flex justify-between">
                                 <span>Service (5%)</span>
-                                <span>{formatPrice(getServiceCharge())}</span>
+                                <span>{formatCurrency(getServiceCharge())}</span>
                             </div>
                         )}
                         <Separator />
                         <div className="flex justify-between font-bold text-lg">
                             <span>Total</span>
-                            <span>{formatPrice(getGrandTotal())}</span>
+                            <span>{formatCurrency(getGrandTotal())}</span>
                         </div>
                     </div>
                 </CardContent>

@@ -15,13 +15,13 @@ export function AdminHeader({ tenantSlug, tenantName, userName }: AdminHeaderPro
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div className="container flex h-14 items-center">
+            <div className="container flex h-14 items-center px-8">
                 <div className="mr-4 flex">
                     <Link href={`/${tenantSlug}/admin`} className="flex items-center space-x-2">
                         <div className="h-6 w-6 rounded bg-teal-600 flex items-center justify-center md:hidden">
                             <span className="text-white font-bold text-xs">OM</span>
                         </div>
-                        <span className="hidden font-bold sm:inline-block text-sm">
+                        <span className="hidden font-bold sm:inline-block text-lg">
                             {tenantName}
                         </span>
                     </Link>
@@ -47,18 +47,6 @@ export function AdminHeader({ tenantSlug, tenantName, userName }: AdminHeaderPro
                                 <span className="sm:hidden">Menu</span>
                             </Link>
                         </Button>
-
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-full bg-teal-100 flex items-center justify-center">
-                                <span className="text-teal-600 font-semibold text-sm">
-                                    {user?.name?.charAt(0).toUpperCase() || 'A'}
-                                </span>
-                            </div>
-                            <div className="hidden md:block">
-                                <p className="text-sm font-medium">{user?.name || userName}</p>
-                                <p className="text-xs text-muted-foreground">Administrator</p>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Table, Star, Share2, Phone, LocateIcon, Search } from 'lucide-react';
 import type { Tenant } from '@/types/auth';
+import { formatCurrency } from '@/lib/format';
 
 interface MenuHeaderProps {
     tenant: Tenant;
@@ -186,7 +187,7 @@ export function FloatingCartButton({ cartItemCount, totalPrice, onCartClick }: F
                         )}
                     </div>
                     <span className="truncate">
-                        {cartItemCount > 0 ? `View Cart - $${totalPrice.toFixed(2)}` : 'View Cart'}
+                        {cartItemCount > 0 ? `View Cart - ${formatCurrency(totalPrice)}` : 'View Cart'}
                     </span>
                 </Button>
             </div>
