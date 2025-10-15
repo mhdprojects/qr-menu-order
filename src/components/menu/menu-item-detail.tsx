@@ -126,10 +126,10 @@ export function MenuItemDetail({
                                 }}
                             >
                                 {menuItem.variants.map((variant) => (
-                                    <div key={variant.id} className="flex items-center space-x-2">
+                                    <div key={variant.id} className="flex items-center">
                                         <RadioGroupItem value={variant.id} id={variant.id} />
-                                        <Label htmlFor={variant.id} className="flex-1 cursor-pointer">
-                                            <div className="flex justify-between items-center">
+                                        <Label htmlFor={variant.id} className="ml-2 flex-1 cursor-pointer">
+                                            <div className="flex justify-between items-center w-full">
                                                 <span>{variant.name}</span>
                                                 {variant.priceDelta !== 0 && (
                                                     <Badge variant="outline">
@@ -183,7 +183,7 @@ export function MenuItemDetail({
                                                     }}
                                                 />
                                                 <Label htmlFor={option.id} className="flex-1 cursor-pointer">
-                                                    <div className="flex justify-between items-center">
+                                                    <div className="flex justify-between items-center w-full">
                                                         <span>{option.name}</span>
                                                         {option.priceDelta !== 0 && (
                                                             <Badge variant="outline">

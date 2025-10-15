@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getCurrentTenantSlug } from '@/lib/tenant';
-import { modifierSchema } from '@/lib/validations';
+import { modifierSchema, modifierOptionSchema } from '@/lib/validations';
 import { handleApiError, NotFoundError, UnauthorizedError } from '@/lib/error-handler';
 
 // PUT update modifier
@@ -47,6 +47,50 @@ export async function PUT(
         }
 
         console.error('Update modifier error:', error);
+        return handleApiError(error);
+    }
+}
+
+// GET modifier with options
+export async function GET(
+    request: NextRequest,
+    { params }: { params: Promise<{ slug: string; menuItemId: string; modifierId: string }> }
+) {
+    try {
+        const { slug, menuItemId, modifierId } = await params;
+
+        // Get tenant by slug to get the tenantId
+        const tenant = await prisma.tenant.findUnique({
+            where: { slug },
+            select: { id: true },
+        });
+
+        if (!tenant) {
+            return handleApiError(new NotFoundError('Tenant not found'));
+        }
+
+        const modifier = await prisma.menuModifier.findFirst({
+            where: {
+                id: modifierId,
+                menuItemId,
+                tenantId: tenant.id,
+                deletedAt: null,
+            },
+            include: {
+                options: {
+                    where: { deletedAt: null },
+                    orderBy: { sortOrder: 'asc' },
+                },
+            },
+        });
+
+        if (!modifier) {
+            return handleApiError(new NotFoundError('Modifier not found'));
+        }
+
+        return NextResponse.json({ modifier });
+    } catch (error) {
+        console.error('Get modifier error:', error);
         return handleApiError(error);
     }
 }

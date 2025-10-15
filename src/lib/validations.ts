@@ -65,10 +65,10 @@ export const modifierSchema = z.object({
 
 export const modifierOptionSchema = z.object({
     name: z.string().min(1, 'Nama opsi harus diisi'),
-    price_delta: z.string().min(1, 'Perubahan harga harus diisi').refine(
-        (val) => !isNaN(parseFloat(val)),
-        'Perubahan harga harus berupa angka yang valid'
-    ),
+    price_delta: z.union([
+        z.string().refine((val) => !isNaN(parseFloat(val)), 'Perubahan harga harus berupa angka yang valid'),
+        z.number()
+    ]).transform((val) => typeof val === 'string' ? parseFloat(val) : val),
     sort_order: z.number().default(0),
 });
 

@@ -224,7 +224,6 @@ export default function MenuPage() {
                                         key={menuItem.id}
                                         menuItem={menuItem}
                                         onClick={() => handleMenuItemClick(menuItem)}
-                                        onAddToCart={() => handleAddToCart(menuItem)}
                                     />
                                 ))
                                 : categories
@@ -236,7 +235,6 @@ export default function MenuPage() {
                                                 key={menuItem.id}
                                                 menuItem={menuItem}
                                                 onClick={() => handleMenuItemClick(menuItem)}
-                                                onAddToCart={() => handleAddToCart(menuItem)}
                                             />
                                         ))
                                     )
